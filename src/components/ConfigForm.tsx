@@ -25,32 +25,32 @@ export function ConfigForm({ onSubmit, initialConfig }: ConfigFormProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
-    // 基本驗證
+    // Basic validation
     if (!privateKey.trim()) {
-      alert("請輸入 PRIVATE_KEY")
+      alert("Please enter PRIVATE_KEY")
       return
     }
     if (!rpcUrl.trim()) {
-      alert("請輸入 RPC_URL")
+      alert("Please enter RPC_URL")
       return
     }
     if (!owner.trim()) {
-      alert("請輸入 OWNER 地址")
+      alert("Please enter OWNER address")
       return
     }
     if (!vault.trim()) {
-      alert("請輸入 VAULT 地址")
+      alert("Please enter VAULT address")
       return
     }
 
-    // 驗證地址格式（簡單檢查）
+    // Validate address format (simple check)
     const addressRegex = /^0x[a-fA-F0-9]{40}$/
     if (!addressRegex.test(owner.trim())) {
-      alert("OWNER 地址格式不正確")
+      alert("OWNER address format is incorrect")
       return
     }
     if (!addressRegex.test(vault.trim())) {
-      alert("VAULT 地址格式不正確")
+      alert("VAULT address format is incorrect")
       return
     }
 
@@ -65,9 +65,9 @@ export function ConfigForm({ onSubmit, initialConfig }: ConfigFormProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>配置資訊</CardTitle>
+        <CardTitle>Configuration</CardTitle>
         <CardDescription>
-          請輸入您的配置資訊以開始自動贖回功能
+          Please enter your configuration to start the auto-redeem feature
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -75,25 +75,25 @@ export function ConfigForm({ onSubmit, initialConfig }: ConfigFormProps) {
           <div className="pb-4 border-b">
             <div className="space-y-3 text-sm text-muted-foreground">
                 <div className="p-4 bg-muted rounded-lg space-y-2">
-                  <p className="font-semibold text-foreground">⚠️ 重要安全提示</p>
-                  <p>請務必創建一個全新的、一次性使用的錢包來運行此機器人。絕對不要使用您主錢包的私鑰。</p>
+                  <p className="font-semibold text-foreground">⚠️ Important Security Notice</p>
+                  <p>Always create a fresh, one-time-use wallet to run this bot. Never use your main wallet's private key.</p>
                 </div>
                 <div className="space-y-2">
-                  <p className="font-semibold text-foreground">使用步驟：</p>
+                  <p className="font-semibold text-foreground">Usage Steps:</p>
                   <ol className="list-decimal list-inside space-y-1 ml-2">
-                    <li>在 <a href="https://vanity-eth.tk/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">vanity-eth.tk</a> 或使用任何錢包生成器創建一個新錢包</li>
-                    <li>將新錢包的私鑰填入下方的 PRIVATE_KEY 欄位（不含 0x 前綴）</li>
-                    <li>僅向此機器人錢包發送：
+                    <li>Create a new wallet at <a href="https://vanity-eth.tk/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">vanity-eth.tk</a> or using any wallet generator</li>
+                    <li>Enter the new wallet's private key in the PRIVATE_KEY field below (without 0x prefix)</li>
+                    <li>Only send to this bot wallet:
                       <ul className="list-disc list-inside ml-4 mt-1">
-                        <li>您要贖回的 vault share token</li>
-                        <li>少量原生代幣（ETH/AVAX）用於支付 gas 費用</li>
+                        <li>The vault share tokens you want to redeem</li>
+                        <li>A small amount of native tokens (ETH/AVAX) for gas fees</li>
                       </ul>
                     </li>
-                    <li>將您的主錢包地址設為 OWNER 地址 - 這是贖回資產的接收地址</li>
+                    <li>Set your main wallet address as the OWNER address - this is where redeemed assets will be sent</li>
                   </ol>
                 </div>
                 <div className="p-4 bg-muted rounded-lg">
-                  <p className="text-foreground">這樣即使出現問題，也只有機器人錢包處於風險中，您的主資金是安全的。</p>
+                  <p className="text-foreground">This way, even if something goes wrong, only the bot wallet is at risk, and your main funds remain safe.</p>
                 </div>
               </div>
           </div>
@@ -103,16 +103,16 @@ export function ConfigForm({ onSubmit, initialConfig }: ConfigFormProps) {
             <Input
               id="privateKey"
               type="text"
-              placeholder="輸入私鑰（不含 0x 前綴）"
+              placeholder="Enter private key (without 0x prefix)"
               value={privateKey}
               onChange={(e) => setPrivateKey(e.target.value)}
               required
             />
             <p className="text-xs text-muted-foreground">
-              聲明：私鑰僅在瀏覽器中使用，不會被保存或發送到任何伺服器
+              Notice: Private key is only used in the browser and will not be saved or sent to any server
             </p>
             <p className="text-xs text-muted-foreground">
-              <strong>說明：</strong>一次性機器人錢包的私鑰（不含 0x 前綴）。請務必使用專門為此機器人創建的新錢包，不要使用主錢包的私鑰。
+              <strong>Description:</strong> Private key of a one-time bot wallet (without 0x prefix). Please use a new wallet created specifically for this bot, do not use your main wallet's private key.
             </p>
           </div>
 
@@ -127,12 +127,12 @@ export function ConfigForm({ onSubmit, initialConfig }: ConfigFormProps) {
               required
             />
             <p className="text-xs text-muted-foreground">
-              <strong>說明：</strong>您使用的區塊鏈網路的 RPC 端點 URL。你可以到 <a href="https://chainlist.org/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Chainlist</a> 或任何其他地方找到 RPC 端點 URL。
+              <strong>Description:</strong> RPC endpoint URL for the blockchain network you're using. You can find RPC endpoint URLs at <a href="https://chainlist.org/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Chainlist</a> or any other source.
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="owner">OWNER 地址</Label>
+            <Label htmlFor="owner">OWNER Address</Label>
             <Input
               id="owner"
               type="text"
@@ -142,15 +142,15 @@ export function ConfigForm({ onSubmit, initialConfig }: ConfigFormProps) {
               required
             />
             <p className="text-xs text-muted-foreground">
-              接收贖回資產的主錢包地址
+              Main wallet address to receive redeemed assets
             </p>
             <p className="text-xs text-muted-foreground">
-              <strong>說明：</strong>您的主錢包地址，贖回的資產將發送到此地址。這應該是您的主要錢包，而不是機器人錢包。
+              <strong>Description:</strong> Your main wallet address where redeemed assets will be sent. This should be your primary wallet, not the bot wallet.
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="vault">VAULT 地址</Label>
+            <Label htmlFor="vault">VAULT Address</Label>
             <Input
               id="vault"
               type="text"
@@ -160,12 +160,12 @@ export function ConfigForm({ onSubmit, initialConfig }: ConfigFormProps) {
               required
             />
             <p className="text-xs text-muted-foreground">
-            <strong>說明：</strong>你要監控及贖回的 ERC-4626 vault 合約地址
+            <strong>Description:</strong> The ERC-4626 vault contract address you want to monitor and redeem from
             </p>
           </div>
 
           <Button type="submit" className="w-full">
-            開始自動贖回
+            Save Configuration
           </Button>
         </form>
       </CardContent>

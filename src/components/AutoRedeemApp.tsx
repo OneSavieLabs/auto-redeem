@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { ConfigForm, type Config } from "@/components/ConfigForm"
 import { useAutoRedeem } from "@/hooks/useAutoRedeem"
 import { Button } from "@/components/ui/button"
@@ -8,6 +8,7 @@ export function AutoRedeemApp() {
   const [config, setConfig] = useState<Config | null>(null)
   const { isRunning, balance, maxRedeemable, botAddress, logs, error, start, stop } =
     useAutoRedeem(config)
+  const logsContainerRef = useRef<HTMLDivElement>(null)
 
   const handleConfigSubmit = (newConfig: Config) => {
     if (isRunning) {
@@ -40,12 +41,19 @@ export function AutoRedeemApp() {
     }
   }
 
+  // Auto-scroll to bottom when logs update (only scroll the logs container, not the whole page)
+  useEffect(() => {
+    if (logsContainerRef.current) {
+      logsContainerRef.current.scrollTop = logsContainerRef.current.scrollHeight
+    }
+  }, [logs])
+
   return (
     <div className="container mx-auto p-4 max-w-4xl space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold">Auto-Redeem Rescue Script</h1>
+      <div className="space-y-2 text-center">
+        <h1 className="text-3xl font-bold">Auto-Redeem Rescue</h1>
         <p className="text-muted-foreground">
-          持續嘗試從 ERC-4626 合規的 vault 中提取資金
+          Continuously attempts to withdraw funds from ERC-4626 compliant vaults
         </p>
       </div>
 
@@ -53,11 +61,11 @@ export function AutoRedeemApp() {
         <ConfigForm onSubmit={handleConfigSubmit} />
       ) : (
         <div className="space-y-6">
-          {/* 配置資訊卡片 */}
+          {/* Configuration Info Card */}
           <Card>
             <CardHeader>
-              <CardTitle>當前配置</CardTitle>
-              <CardDescription>您可以停止後重新配置</CardDescription>
+              <CardTitle>Current Configuration</CardTitle>
+              <CardDescription>You can stop and reconfigure</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
               <div className="grid grid-cols-2 gap-4 text-sm">
@@ -82,14 +90,14 @@ export function AutoRedeemApp() {
                   disabled={isRunning}
                   variant="default"
                 >
-                  開始自動贖回
+                  Start Auto-Redeem
                 </Button>
                 <Button
                   onClick={stop}
                   disabled={!isRunning}
                   variant="destructive"
                 >
-                  停止
+                  Stop
                 </Button>
                 <Button
                   onClick={() => {
@@ -98,29 +106,29 @@ export function AutoRedeemApp() {
                   }}
                   variant="outline"
                 >
-                  重新配置
+                  Reconfigure
                 </Button>
               </div>
             </CardContent>
           </Card>
 
-          {/* 狀態卡片 */}
+          {/* Status Card */}
           {isRunning && (
             <Card>
               <CardHeader>
-                <CardTitle>當前狀態</CardTitle>
-                <CardDescription>實時監控資訊</CardDescription>
+                <CardTitle>Current Status</CardTitle>
+                <CardDescription>Real-time monitoring information</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <div className="text-sm text-muted-foreground">餘額</div>
+                    <div className="text-sm text-muted-foreground">Balance</div>
                     <div className="text-2xl font-bold">
                       {formatBigInt(balance)}
                     </div>
                   </div>
                   <div>
-                    <div className="text-sm text-muted-foreground">可贖回數量</div>
+                    <div className="text-sm text-muted-foreground">Max Redeemable</div>
                     <div className="text-2xl font-bold">
                       {formatBigInt(maxRedeemable)}
                     </div>
@@ -129,7 +137,7 @@ export function AutoRedeemApp() {
                 {error && (
                   <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md">
                     <div className="text-sm font-medium text-destructive">
-                      錯誤: {error}
+                      Error: {error}
                     </div>
                   </div>
                 )}
@@ -137,17 +145,17 @@ export function AutoRedeemApp() {
             </Card>
           )}
 
-          {/* 日誌卡片 */}
+          {/* Logs Card */}
           <Card>
             <CardHeader>
-              <CardTitle>交易日誌</CardTitle>
-              <CardDescription>最近的活動記錄</CardDescription>
+              <CardTitle>Transaction Logs</CardTitle>
+              <CardDescription>Recent activity records</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2 max-h-96 overflow-y-auto">
+              <div ref={logsContainerRef} className="space-y-2 max-h-96 overflow-y-auto">
                 {logs.length === 0 ? (
                   <div className="text-sm text-muted-foreground text-center py-4">
-                    暫無日誌
+                    No logs yet
                   </div>
                 ) : (
                   logs.map((log, index) => (
@@ -161,14 +169,9 @@ export function AutoRedeemApp() {
                       </span>
                       <span className="flex-1">{log.message}</span>
                       {log.hash && (
-                        <a
-                          href={`https://snowtrace.io/tx/${log.hash}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary hover:underline shrink-0"
-                        >
-                          查看
-                        </a>
+                        <div>
+                          tx hash: {log.hash}
+                        </div>
                       )}
                     </div>
                   ))

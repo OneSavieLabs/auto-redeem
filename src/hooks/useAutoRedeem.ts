@@ -39,7 +39,7 @@ export function useAutoRedeem(config: Config | null) {
   const addLog = useCallback((log: TransactionLog) => {
     setState((prev) => ({
       ...prev,
-      logs: [...prev.logs.slice(-99), log], // 保留最近 100 條日誌
+      logs: [...prev.logs.slice(-99), log], // Keep the last 100 logs
     }))
   }, [])
 
@@ -53,7 +53,7 @@ export function useAutoRedeem(config: Config | null) {
       addLog({
         timestamp: new Date().toISOString(),
         type: "check",
-        message: `檢查 vault，地址: ${botAddress}`,
+        message: `Checking vault, address: ${config.vault}`,
       })
 
       // Read balance and maxRedeem in parallel
@@ -83,7 +83,7 @@ export function useAutoRedeem(config: Config | null) {
       addLog({
         timestamp: new Date().toISOString(),
         type: "check",
-        message: `餘額: ${balance.toString()}, 可贖回: ${maxRedeemable.toString()}`,
+        message: `Balance: ${balance.toString()}, Max redeemable: ${maxRedeemable.toString()}`,
       })
 
       // Take minimum of balance and maxRedeemable
@@ -93,7 +93,7 @@ export function useAutoRedeem(config: Config | null) {
         addLog({
           timestamp: new Date().toISOString(),
           type: "redeem",
-          message: `發現 ${sharesToRedeem.toString()} 份額可贖回！嘗試贖回到: ${config.owner}`,
+          message: `Found ${sharesToRedeem.toString()} shares redeemable! Attempting to redeem to: ${config.owner}`,
         })
 
         // Call redeem function
@@ -109,7 +109,7 @@ export function useAutoRedeem(config: Config | null) {
         addLog({
           timestamp: new Date().toISOString(),
           type: "redeem",
-          message: `交易已發送！Hash: ${hash}`,
+          message: `Transaction sent! Hash: ${hash}`,
           hash,
         })
 
@@ -120,7 +120,7 @@ export function useAutoRedeem(config: Config | null) {
           addLog({
             timestamp: new Date().toISOString(),
             type: "success",
-            message: `交易確認成功！區塊: ${receipt.blockNumber.toString()}`,
+            message: `Transaction confirmed successfully! Block: ${receipt.blockNumber.toString()}`,
             hash,
             blockNumber: receipt.blockNumber,
           })
@@ -128,7 +128,7 @@ export function useAutoRedeem(config: Config | null) {
           addLog({
             timestamp: new Date().toISOString(),
             type: "error",
-            message: `交易失敗！`,
+            message: `Transaction failed!`,
             hash,
           })
         }
@@ -136,7 +136,7 @@ export function useAutoRedeem(config: Config | null) {
         addLog({
           timestamp: new Date().toISOString(),
           type: "check",
-          message: "目前沒有可贖回的份額",
+          message: "No redeemable shares available",
         })
       }
     } catch (error) {
@@ -148,7 +148,7 @@ export function useAutoRedeem(config: Config | null) {
       addLog({
         timestamp: new Date().toISOString(),
         type: "error",
-        message: `錯誤: ${errorMessage}`,
+        message: `Error: ${errorMessage}`,
       })
     }
   }, [config, addLog])
@@ -157,7 +157,7 @@ export function useAutoRedeem(config: Config | null) {
     if (!config) {
       setState((prev) => ({
         ...prev,
-        error: "請先配置資訊",
+        error: "Please configure first",
       }))
       return
     }
@@ -180,7 +180,7 @@ export function useAutoRedeem(config: Config | null) {
           {
             timestamp: new Date().toISOString(),
             type: "check",
-            message: `🚀 自動贖回腳本啟動`,
+            message: `🚀 Auto-redeem script started`,
           },
           {
             timestamp: new Date().toISOString(),
@@ -190,17 +190,17 @@ export function useAutoRedeem(config: Config | null) {
           {
             timestamp: new Date().toISOString(),
             type: "check",
-            message: `接收地址: ${config.owner}`,
+            message: `Recipient address: ${config.owner}`,
           },
           {
             timestamp: new Date().toISOString(),
             type: "check",
-            message: `操作地址: ${botAddress}`,
+            message: `Operator address: ${botAddress}`,
           },
           {
             timestamp: new Date().toISOString(),
             type: "check",
-            message: `檢查間隔: ${INTERVAL_MS}ms`,
+            message: `Check interval: ${INTERVAL_MS}ms`,
           },
         ],
       }))
@@ -232,7 +232,7 @@ export function useAutoRedeem(config: Config | null) {
     addLog({
       timestamp: new Date().toISOString(),
       type: "check",
-      message: "自動贖回已停止",
+      message: "Auto-redeem stopped",
     })
   }, [addLog])
 
