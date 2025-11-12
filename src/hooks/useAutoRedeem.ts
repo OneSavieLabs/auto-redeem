@@ -93,7 +93,7 @@ export function useAutoRedeem(config: Config | null) {
         addLog({
           timestamp: new Date().toISOString(),
           type: "redeem",
-          message: `Found ${sharesToRedeem.toString()} shares redeemable! Attempting to redeem to: ${config.owner}`,
+          message: `Found ${sharesToRedeem.toString()} shares redeemable! Attempting to redeem to: ${config.receiver}`,
         })
 
         // Call redeem function
@@ -101,7 +101,7 @@ export function useAutoRedeem(config: Config | null) {
           address: config.vault as Address,
           abi: abi,
           functionName: "redeem",
-          args: [sharesToRedeem, config.owner as Address, botAddress],
+          args: [sharesToRedeem, config.receiver as Address, botAddress],
           chain: walletClient.chain,
           account: account,
         })
@@ -190,7 +190,7 @@ export function useAutoRedeem(config: Config | null) {
           {
             timestamp: new Date().toISOString(),
             type: "check",
-            message: `Recipient address: ${config.owner}`,
+            message: `Recipient address: ${config.receiver}`,
           },
           {
             timestamp: new Date().toISOString(),

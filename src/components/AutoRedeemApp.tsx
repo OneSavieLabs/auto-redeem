@@ -75,8 +75,8 @@ export function AutoRedeemApp() {
                   <span className="font-mono text-xs">{config.vault}</span>
                 </div>
                 <div>
-                  <span className="font-medium">Owner:</span>{" "}
-                  <span className="font-mono text-xs">{config.owner}</span>
+                  <span className="font-medium">Receiver:</span>{" "}
+                  <span className="font-mono text-xs">{config.receiver}</span>
                 </div>
                 {botAddress && (
                   <div>

@@ -3,11 +3,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
 
 export interface Config {
   privateKey: string
   rpcUrl: string
-  owner: string
+  receiver: string
   vault: string
 }
 
@@ -19,8 +20,9 @@ interface ConfigFormProps {
 export function ConfigForm({ onSubmit, initialConfig }: ConfigFormProps) {
   const [privateKey, setPrivateKey] = useState(initialConfig?.privateKey || "")
   const [rpcUrl, setRpcUrl] = useState(initialConfig?.rpcUrl || "")
-  const [owner, setOwner] = useState(initialConfig?.owner || "")
+  const [receiver, setReceiver] = useState(initialConfig?.receiver || "")
   const [vault, setVault] = useState(initialConfig?.vault || "")
+  const [disclaimerAccepted, setDisclaimerAccepted] = useState(false)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -34,8 +36,8 @@ export function ConfigForm({ onSubmit, initialConfig }: ConfigFormProps) {
       alert("Please enter RPC_URL")
       return
     }
-    if (!owner.trim()) {
-      alert("Please enter OWNER address")
+    if (!receiver.trim()) {
+      alert("Please enter Receiver address")
       return
     }
     if (!vault.trim()) {
@@ -45,8 +47,12 @@ export function ConfigForm({ onSubmit, initialConfig }: ConfigFormProps) {
 
     // Validate address format (simple check)
     const addressRegex = /^0x[a-fA-F0-9]{40}$/
-    if (!addressRegex.test(owner.trim())) {
-      alert("OWNER address format is incorrect")
+    if (!addressRegex.test(receiver.trim())) {
+      alert("Receiver address format is incorrect")
+      return
+    }
+    if (!disclaimerAccepted) {
+      alert("Please accept the disclaimer before proceeding")
       return
     }
     if (!addressRegex.test(vault.trim())) {
@@ -57,7 +63,7 @@ export function ConfigForm({ onSubmit, initialConfig }: ConfigFormProps) {
     onSubmit({
       privateKey: privateKey.trim(),
       rpcUrl: rpcUrl.trim(),
-      owner: owner.trim(),
+      receiver: receiver.trim(),
       vault: vault.trim(),
     })
   }
@@ -89,7 +95,7 @@ export function ConfigForm({ onSubmit, initialConfig }: ConfigFormProps) {
                         <li>A small amount of native tokens (ETH/AVAX) for gas fees</li>
                       </ul>
                     </li>
-                    <li>Set your main wallet address as the OWNER address - this is where redeemed assets will be sent</li>
+                    <li>Set your main wallet address as the receiver address - this is where redeemed assets will be sent</li>
                   </ol>
                 </div>
                 <div className="p-4 bg-muted rounded-lg">
@@ -132,13 +138,13 @@ export function ConfigForm({ onSubmit, initialConfig }: ConfigFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="owner">OWNER Address</Label>
+            <Label htmlFor="receiver">Receiver Address</Label>
             <Input
-              id="owner"
+              id="receiver"
               type="text"
               placeholder="0x..."
-              value={owner}
-              onChange={(e) => setOwner(e.target.value)}
+              value={receiver}
+              onChange={(e) => setReceiver(e.target.value)}
               required
             />
             <p className="text-xs text-muted-foreground">
@@ -162,6 +168,20 @@ export function ConfigForm({ onSubmit, initialConfig }: ConfigFormProps) {
             <p className="text-xs text-muted-foreground">
             <strong>Description:</strong> The ERC-4626 vault contract address you want to monitor and redeem from
             </p>
+          </div>
+
+          <div className="flex items-start space-x-2 pb-2">
+            <Checkbox
+              id="disclaimer"
+              checked={disclaimerAccepted}
+              onCheckedChange={(checked) => setDisclaimerAccepted(checked === true)}
+            />
+            <Label
+              htmlFor="disclaimer"
+              className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+            >
+              I understand and have read the instructions for using this tool. I acknowledge that the developers are not responsible for any asset losses, and I assume all risks associated with using this tool.
+            </Label>
           </div>
 
           <Button type="submit" className="w-full">
