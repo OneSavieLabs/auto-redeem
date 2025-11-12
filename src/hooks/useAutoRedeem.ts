@@ -16,6 +16,7 @@ export interface TransactionLog {
 
 export interface AutoRedeemState {
   isRunning: boolean
+  isProcessing: boolean
   balance: bigint | null
   maxRedeemable: bigint | null
   botAddress: string | null
@@ -26,6 +27,7 @@ export interface AutoRedeemState {
 export function useAutoRedeem(config: Config | null) {
   const [state, setState] = useState<AutoRedeemState>({
     isRunning: false,
+    isProcessing: false,
     balance: null,
     maxRedeemable: null,
     botAddress: null,
@@ -35,6 +37,7 @@ export function useAutoRedeem(config: Config | null) {
 
   const intervalRef = useRef<number | null>(null)
   const clientsRef = useRef<ReturnType<typeof createClients> | null>(null)
+  const isProcessingRef = useRef<boolean>(false)
 
   const addLog = useCallback((log: TransactionLog) => {
     setState((prev) => ({
@@ -45,6 +48,24 @@ export function useAutoRedeem(config: Config | null) {
 
   const attemptRedeem = useCallback(async () => {
     if (!clientsRef.current || !config) return
+
+    // 檢查是否正在處理交易，避免重複觸發
+    if (isProcessingRef.current) {
+      return
+    }
+
+    // 設置處理狀態並暫停計時器
+    isProcessingRef.current = true
+    setState((prev) => ({
+      ...prev,
+      isProcessing: true,
+    }))
+
+    // 暫停計時器
+    if (intervalRef.current !== null) {
+      window.clearInterval(intervalRef.current)
+      intervalRef.current = null
+    }
 
     try {
       const { account, publicClient, walletClient } = clientsRef.current
@@ -124,6 +145,14 @@ export function useAutoRedeem(config: Config | null) {
             hash,
             blockNumber: receipt.blockNumber,
           })
+          
+          // 交易成功後停止輪詢
+          isProcessingRef.current = false
+          setState((prev) => ({
+            ...prev,
+            isRunning: false,
+            isProcessing: false,
+          }))
         } else {
           addLog({
             timestamp: new Date().toISOString(),
@@ -131,6 +160,16 @@ export function useAutoRedeem(config: Config | null) {
             message: `Transaction failed!`,
             hash,
           })
+          
+          // 交易失敗後重新啟動輪詢
+          isProcessingRef.current = false
+          setState((prev) => ({
+            ...prev,
+            isProcessing: false,
+          }))
+          
+          // 重新啟動計時器
+          intervalRef.current = window.setInterval(attemptRedeem, INTERVAL_MS)
         }
       } else {
         addLog({
@@ -138,18 +177,33 @@ export function useAutoRedeem(config: Config | null) {
           type: "check",
           message: "No redeemable shares available",
         })
+        
+        // 沒有可兌回的 shares，重置處理狀態並重新啟動輪詢
+        isProcessingRef.current = false
+        setState((prev) => ({
+          ...prev,
+          isProcessing: false,
+        }))
+        
+        // 重新啟動計時器
+        intervalRef.current = window.setInterval(attemptRedeem, INTERVAL_MS)
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error)
+      isProcessingRef.current = false
       setState((prev) => ({
         ...prev,
         error: errorMessage,
+        isProcessing: false,
       }))
       addLog({
         timestamp: new Date().toISOString(),
         type: "error",
         message: `Error: ${errorMessage}`,
       })
+      
+      // 發生錯誤時重新啟動輪詢
+      intervalRef.current = window.setInterval(attemptRedeem, INTERVAL_MS)
     }
   }, [config, addLog])
 
@@ -171,9 +225,13 @@ export function useAutoRedeem(config: Config | null) {
 
       const botAddress = clientsRef.current.account.address
 
+      // 重置處理狀態
+      isProcessingRef.current = false
+
       setState((prev) => ({
         ...prev,
         isRunning: true,
+        isProcessing: false,
         botAddress,
         error: null,
         logs: [
@@ -205,11 +263,8 @@ export function useAutoRedeem(config: Config | null) {
         ],
       }))
 
-      // Run immediately
+      // Run immediately, then it will set up interval if needed
       attemptRedeem()
-
-      // Then run at intervals
-      intervalRef.current = window.setInterval(attemptRedeem, INTERVAL_MS)
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error)
       setState((prev) => ({
@@ -225,9 +280,11 @@ export function useAutoRedeem(config: Config | null) {
       window.clearInterval(intervalRef.current)
       intervalRef.current = null
     }
+    isProcessingRef.current = false
     setState((prev) => ({
       ...prev,
       isRunning: false,
+      isProcessing: false,
     }))
     addLog({
       timestamp: new Date().toISOString(),
