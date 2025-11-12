@@ -1,121 +1,113 @@
-# Auto-Redeem Rescue Script
+# Auto-Redeem Rescue
 
-A rescue script that continuously attempts to withdraw funds from a vault with limited liquidity.
+A rescue app that continuously attempts to withdraw funds from ERC-4626 compliant vaults with limited liquidity.
 
-**Works with any ERC-4626 compliant vault** - simply update the vault address and network configuration.
+🌐 **Live Version**: [https://onesavielabs.github.io/auto-redeem/](https://onesavielabs.github.io/auto-redeem/)
 
-## ⚠️ Security Warning
+**Works with any ERC-4626 compliant vault** - simply configure the vault address and network settings in the web interface.
 
-**Always create a fresh, one-time wallet to run this bot. Never use your main wallet's private key.**
+## Reference Project
 
-**How to do this safely:**
+This project is referenced and adapted from [antoncoding/auto-redeem](https://github.com/antoncoding/auto-redeem), converting the original Node.js script into a React-based web application with a more user-friendly interface.
+
+## ⚠️ Security Notice
+
+**We do not store any user data. All data exists only in the user's browser.**
+
+**Always create a fresh, one-time wallet to run this tool. Never use your main wallet's private key.**
+
+**How to use safely:**
+
 1. Generate a new wallet at [vanity-eth.tk](https://vanity-eth.tk/) or using any wallet generator
-2. Use this new wallet's private key in your `.env` file
+2. Enter this new wallet's private key in the application (without the `0x` prefix)
 3. Only send to this bot wallet:
    - The vault share tokens you want to redeem
-   - A small amount of native token (ETH/AVAX) for gas fees
-4. Set your main wallet as the `OWNER` - this is where redeemed assets will be sent
+   - A small amount of native tokens (ETH/AVAX) for gas fees
+4. Set your main wallet as the receiver address (Receiver Address) - this is where redeemed assets will be sent
 
-This way, even if something goes wrong, only the bot wallet is at risk, not your main funds.
+This way, even if something goes wrong, only the bot wallet is at risk, and your main funds remain safe.
 
-## Setup
+## How It Works
 
-### 1. Install dependencies
+This application runs directly in your browser and works as follows:
+
+1. **Browser-side execution**: All operations are performed in your browser without requiring a server. Your private keys and configuration information never leave your browser.
+
+2. **Continuous monitoring**: The application checks the vault's available liquidity every second using the ERC-4626 standard `maxRedeem` function to determine the maximum amount that can be redeemed.
+
+3. **Automatic redemption**: When redeemable shares are detected, the application automatically executes a `redeem` transaction, sending assets to your specified receiver address.
+
+4. **Real-time logs**: All operations are recorded in transaction logs, including check status, transaction hashes, and confirmation information, making it easy to track progress.
+
+5. **Secure design**: Uses a one-time bot wallet, so even if something goes wrong, it won't affect your main funds.
+
+## Getting Started
+
+### 1. Install Dependencies
 
 ```bash
 pnpm install
 ```
 
-### 2. Configure `.env` file
+### 2. Development Mode
 
-Create a `.env` file in the project root with the following variables:
-
-```env
-PRIVATE_KEY=one_time_wallet_private_key
-
-RPC_URL=https://avax-mainnet.g.alchemy.com/v2/your_api_key
-
-OWNER=your_main_wallet_address
-```
-
-**What each variable means:**
-
-- `PRIVATE_KEY`: The private key of your one-time bot wallet (without the `0x` prefix)
-- `RPC_URL`: The RPC endpoint URL for the blockchain network you're using
-- `OWNER`: Your main wallet address where you want the redeemed assets sent back to
-
-### 3. Configure vault address
-
-Open `constant.ts` and update the vault address:
-
-```typescript
-export const VAULT = '0xYourVaultAddress'
-```
-
-**Example**: For the K3 USDT Earn Vault on Avalanche, use:
-```typescript
-export const VAULT = '0xE1A62FDcC6666847d5EA752634E45e134B2F824B'
-```
-
-### 4. Get your bot address and transfer tokens
-
-Now you're ready to run the bot for the first time to discover your bot's wallet address.
-
-Start the script with `pnpm start`, and you'll see output like this:
-
-```
-🚀 Auto-redeem rescue script starting...
-Vault: 0xE1A62FDcC6666847d5EA752634E45e134B2F824B
-Recipient: 0x8f40b86eCc96D5a381F938775BF4257d65370Bd4
-Operator: 0x66ae9d415DCD4DaD9425B485Bd82D8c2A2F829F9
-
-[2025-11-06T01:53:27.631Z] Checking vault for address: 0x66ae9d415DCD4DaD9425B485Bd82D8c2A2F829F9
-```
-
-**Important**: The `Operator` address (in this example `0x66ae9d415DCD4DaD9425B485Bd82D8c2A2F829F9`) is your bot's wallet address.
-
-**What to do:**
-1. Copy your bot's wallet address from the `Operator` line in the logs
-2. Transfer your vault share tokens to this address
-3. Also send a small amount of AVAX (or native token) for gas fees
-4. The bot will automatically detect the shares and start attempting to redeem them
-5. Watch the logs - you'll see the "Balance" increase after the transfer completes
-
-
-## How to Run
-
-Start the bot with:
+Start the development server:
 
 ```bash
-pnpm start
+pnpm dev
 ```
 
-The script will:
-- Display your bot's wallet address (Operator)
-- Check every 1 second for available liquidity
-- Automatically redeem shares when liquidity is available
-- Send redeemed assets to your main wallet (OWNER address)
+### 3. Build
 
-**To stop the bot**: Press `Ctrl+C`
-
-## Changing Networks
-
-If you want to use a different network, update `client.ts`:
-
-```typescript
-import { mainnet } from 'viem/chains'; // Import your desired chain
-
-// Update both clients with the new chain
-export const publicClient = createPublicClient({
-  chain: mainnet, // Change this to your network
-  transport: http(process.env.RPC_URL),
-});
-
-export const walletClient = createWalletClient({
-  account,
-  chain: mainnet, // Change this to your network
-  transport: http(process.env.RPC_URL),
-});
+```bash
+pnpm build
 ```
 
-Any network supported by viem can be used. See the [viem chains documentation](https://viem.sh/docs/chains/introduction) for all available networks.
+### 4. Deploy
+
+Deploy to GitHub Pages:
+
+```bash
+pnpm deploy
+```
+
+### Using the Application
+
+1. After opening the application, you'll see a configuration form
+2. Fill in the following information:
+   - **PRIVATE_KEY**: Your one-time bot wallet private key (without the `0x` prefix)
+   - **RPC_URL**: RPC endpoint URL for the blockchain network (can be found at [Chainlist](https://chainlist.org/))
+   - **Receiver Address**: Your main wallet address for receiving redeemed assets
+   - **VAULT Address**: ERC-4626 vault contract address
+3. Read and accept the disclaimer
+4. Click "Save Configuration" to save the configuration
+5. Click "Start Auto-Redeem" to begin automatic redemption
+6. The application will display your bot wallet address. Transfer vault share tokens to this address
+7. Monitor transaction logs to track progress
+
+**Note**: The application automatically detects shares in your bot wallet and automatically executes redemption when liquidity is available.
+
+## Support This Project
+
+If you find this project useful, we welcome:
+
+- ⭐ Give us a Star on GitHub
+- 🐛 Report issues or suggest improvements
+- 🔀 Submit Pull Requests
+- 📢 Share with friends in need
+
+Project URL: [https://github.com/OneSavieLabs/auto-redeem](https://github.com/OneSavieLabs/auto-redeem)
+
+### 💰 Donation Support
+
+If you would like to support this project through donations, we accept donations on the following chains:
+
+- **Base**
+- **Arbitrum**
+- **BNB Chain**
+
+**Donation Address**: `0x4c9fe5e7d77401cF8a2DF89937F77D9B3537D826`
+
+Thank you for your support!
+
+## MIT License
